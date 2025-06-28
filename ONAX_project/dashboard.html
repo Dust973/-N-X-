@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Dashboard Admin Ω</title>
+<link rel="stylesheet" href="dashboard.css" />
+</head>
+<body>
+  <h1>Dashboard Admin Ω</h1>
+  <p>Accessible uniquement au compte DustyShadowShow.</p>
+
+  <h2>Console</h2>
+  <textarea id="console" rows="10" cols="100" readonly></textarea>
+
+  <h2>Fichiers JSON critiques</h2>
+  <div id="files">
+    <button onclick="loadFile('data/users.json')">Users</button>
+    <button onclick="loadFile('data/deleted_users.json')">Deleted Users</button>
+    <button onclick="loadFile('data/messages.json')">Messages</button>
+  </div>
+
+  <pre id="fileContent" style="background:#222; color:#eee; padding:10px; height:300px; overflow:auto;"></pre>
+
+<script>
+function loadFile(path) {
+  fetch(path, { headers: { 'Authorization': 'Basic ' + btoa('DustyShadowShow:Lucas1305@*-') } })
+  .then(res => {
+    if(!res.ok) throw new Error('Erreur de chargement ' + path);
+    return res.text();
+  })
+  .then(txt => {
+    document.getElementById('fileContent').textContent = txt;
+    log('Chargé ' + path);
+  })
+  .catch(e => {
+    log(e.message);
+  });
+}
+
+function log(msg) {
+  const consoleEl = document.getElementById('console');
+  consoleEl.value += msg + "\n";
+  consoleEl.scrollTop = consoleEl.scrollHeight;
+}
+</script>
+</body>
+</html>

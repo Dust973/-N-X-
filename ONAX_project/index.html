@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>ΩN∆X - Connexion</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap');
+    *{box-sizing:border-box;margin:0;padding:0;font-family:'Orbitron',sans-serif;}
+    body{background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);color:#00ffcc;display:flex;flex-direction:column;justify-content:center;align-items:center;height:100vh;overflow:hidden;}
+    h1{font-size:3rem;margin-bottom:1rem;text-shadow:0 0 10px #00ffcc;}
+    form{background:rgba(0,0,0,0.7);padding:2rem 3rem;border-radius:12px;box-shadow:0 0 15px #00ffcc;width:320px;}
+    label{display:block;margin-bottom:.5rem;font-weight:600;letter-spacing:1px;}
+    input{width:100%;padding:.7rem;margin-bottom:1.2rem;border:none;border-radius:6px;background:#011f27;color:#00ffcc;box-shadow:inset 0 0 5px #00ffcc;transition:background .3s;}
+    input:focus{background:#023a4a;outline:none;box-shadow:0 0 8px #00ffcc;}
+    button{width:100%;padding:.8rem;background:#00ffcc;border:none;border-radius:8px;font-weight:700;font-size:1.1rem;color:#003333;cursor:pointer;transition:background .3s;}
+    button:hover{background:#00ccaa;}
+    @media(max-width:400px){form{width:90vw;padding:1.5rem;}}
+  </style>
+</head>
+<body>
+  <h1>ΩN∆X</h1>
+  <form id="loginForm">
+    <label for="username">Identifiant :</label>
+    <input type="text" id="username" required placeholder="Votre ID" />
+    <label for="password">Mot de passe :</label>
+    <input type="password" id="password" required placeholder="Votre mot de passe" />
+    <button type="submit">Se connecter</button>
+  </form>
+
+  <script>
+    document.getElementById('loginForm').addEventListener('submit',async e=>{
+      e.preventDefault();
+      const user=document.getElementById('username').value.trim();
+      const res=await fetch('/login', {method:'POST',headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({id:user,password:document.getElementById('password').value})});
+      const data=await res.json();
+      if(data.role==='admin') window.location.href='admin.html';
+      else if(data.role==='user') window.location.href='user.html';
+      else alert(data.error||'Échec connexion');
+    });
+  </script>
+
+<!-- Bouton Dashboard Admin -->
+<button id="adminBtn" style="
+  position: fixed;
+  top: 15px;
+  right: 15px;
+  z-index: 1000;
+  background: #222;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 15px;
+  cursor: pointer;
+  font-weight: bold;
+">Dashboard Ω</button>
+
+<!-- Modale -->
+<div id="adminModal" style="
+  display:none;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.8);
+  z-index: 9999;
+">
+  <button id="closeModal" style="
+    position: absolute;
+    top: 15px; right: 20px;
+    background: #c33;
+    border: none;
+    color: white;
+    padding: 8px 12px;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 4px;
+  ">X</button>
+  <iframe src="/dashboard" style="
+    width: 90vw;
+    height: 90vh;
+    border: none;
+    margin: 40px auto;
+    display: block;
+    border-radius: 10px;
+    background: #121212;
+  "></iframe>
+</div>
+
+<script>
+  const btn = document.getElementById('adminBtn');
+  const modal = document.getElementById('adminModal');
+  const closeBtn = document.getElementById('closeModal');
+
+  btn.onclick = () => { modal.style.display = 'block'; };
+  closeBtn.onclick = () => { modal.style.display = 'none'; };
+  window.onclick = (e) => { if(e.target === modal) modal.style.display = 'none'; };
+</script>
+
+</body>
+</html>

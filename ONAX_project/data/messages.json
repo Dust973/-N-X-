@@ -1,0 +1,6 @@
+{
+  "from_id": "ID_DE_L_EXPEDITEUR",
+  "to_id": "ID_DE_DESTINATAIRE",
+  "content": "Le message",
+  "timestamp": "2025-06-28T12:34:56"
+}

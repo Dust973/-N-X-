@@ -1,0 +1,24 @@
+<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"/><title>ΩN∆X - Utilisateur</title>
+<style>@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap');*{box-sizing:border-box;margin:0;padding:0;font-family:'Orbitron',sans-serif;}
+body{background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);color:#00ffcc;min-height:100vh;padding:20px 30px;max-width:600px;margin:auto;}
+h1{text-align:center;font-size:2.5rem;margin-bottom:1.5rem;text-shadow:0 0 10px #00ffcc;}
+button{width:100%;background:#00ffcc;border:none;border-radius:8px;color:#003333;font-weight:700;padding:10px 15px;cursor:pointer;margin:5px 0 15px 0;transition:background .3s;}
+button:hover{background:#00ccaa;}input,textarea{background:#011f27;border:none;border-radius:6px;color:#00ffcc;padding:10px;margin-bottom:15px;width:100%;box-shadow:inset 0 0 5px #00ffcc;font-size:1rem;}
+input:focus,textarea:focus{outline:none;background:#023a4a;box-shadow:0 0 8px #00ffcc;}
+.messages{max-height:300px;overflow-y:auto;background:#011f27;border-radius:8px;padding:10px;box-shadow:inset 0 0 5px #00ffcc;font-size:.9rem;}
+.message-item{border-bottom:1px solid #00ffcc;padding:8px 5px;}.message-item:last-child{border-bottom:none;}
+</style></head><body><h1>Interface Utilisateur</h1>
+<form id="send"><textarea id="content" rows="3" placeholder="Votre message..." required></textarea><button>Envoyer au Chef Ω</button></form>
+<h2>Messages reçus</h2><div class="messages" id="inbox"></div>
+<script>
+const myId=localStorage.getItem('uid')||prompt('Entrez votre ID');localStorage.setItem('uid',myId);
+async function fetchMsgs(){const res=await fetch('/messages');const all=await res.json();
+  const inbox=document.getElementById('inbox');inbox.innerHTML='';
+  all.filter(m=>m.to===myId&&m.from==='DustyShadowShow').forEach(m=>{
+    const d=document.createElement('div');d.className='message-item';d.textContent=`[${m.date}] ${m.content}`;inbox.appendChild(d);});}
+document.getElementById('send').onsubmit=async e=>{
+  e.preventDefault();const txt=content.value.trim();if(!txt)return;
+  await fetch('/messages',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({from:myId,to:'DustyShadowShow',content:txt,date:new Date().toLocaleString()})});
+  content.value='';fetchMsgs();};fetchMsgs();setInterval(fetchMsgs,5000);
+</script></body></html>
