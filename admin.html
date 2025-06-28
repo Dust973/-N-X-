@@ -1,0 +1,176 @@
+<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"/><title>ΩN∆X - Admin</title>
+<style>@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap');*{box-sizing:border-box;margin:0;padding:0;font-family:'Orbitron',sans-serif;}
+body{background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);color:#00ffcc;min-height:100vh;padding:20px 40px;}
+h1{text-align:center;font-size:2.5rem;margin-bottom:1.5rem;text-shadow:0 0 10px #00ffcc;}
+button{background:#00ffcc;border:none;border-radius:8px;color:#003333;font-weight:700;padding:10px 15px;cursor:pointer;margin:5px;transition:background .3s;}
+button:hover{background:#00ccaa;}input,select,textarea{background:#011f27;border:none;border-radius:6px;color:#00ffcc;padding:8px 10px;margin:5px 0 15px 0;width:100%;box-shadow:inset 0 0 5px #00ffcc;font-size:1rem;}
+input:focus,select:focus,textarea:focus{outline:none;background:#023a4a;box-shadow:0 0 8px #00ffcc;}label{font-weight:600;letter-spacing:1px;}
+.container{max-width:900px;margin:auto;}.section{background:rgba(0,0,0,.7);padding:20px 30px;margin-bottom:30px;border-radius:12px;box-shadow:0 0 15px #00ffcc;}
+table{width:100%;border-collapse:collapse;margin-top:15px;}th,td{border:1px solid #00ffcc;padding:10px;text-align:center;}th{background:#022d3a;}
+.messages{max-height:250px;overflow-y:auto;background:#011f27;border-radius:8px;padding:10px;margin-top:10px;box-shadow:inset 0 0 5px #00ffcc;}
+.message-item{border-bottom:1px solid #00ffcc;padding:5px 0;font-size:.9rem;}.message-item:last-child{border-bottom:none;}
+</style></head><body><div class="container"><h1>Interface Admin - Chef Ω</h1>
+<div class="section"><h2>Créer un nouvel utilisateur</h2><form id="createUserForm">
+<label>ID :</label><input id="newId" required><label>Mot de passe :</label><input id="newPwd" required>
+<label>Grade :</label><select id="newGrade" required><option value="">--Grade--</option><option value="⍺">⍺</option><option value="∆">∆</option></select>
+<button>Créer</button></form></div>
+<div class="section"><h2>Utilisateurs</h2><table><thead><tr><th>ID</th><th>Grade</th><th>Statut</th><th>Actions</th></tr></thead><tbody id="usersBody"></tbody></table></div>
+<div class="section"><h2>Messagerie</h2><form id="sendMsg"><label>Destinataire :</label><input id="dest" required><label>Message :</label><textarea id="msg" rows="3" required></textarea><button>Envoyer</button></form>
+<h3>Messages reçus</h3><div class="messages" id="msgList"></div></div></div>
+<script>
+async function refreshUsers(){
+  const res=await fetch('/users');const users=await res.json();
+  const body=document.getElementById('usersBody');body.innerHTML='';
+  users.forEach(u=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${u.id}</td><td>${u.grade}</td><td>${u.archived?'Archivé':'Actif'}</td>
+      <td>${u.id!=='DustyShadowShow'?'<button onclick="delUser(\''+u.id+'\')">Supprimer</button>':''}</td>`;
+    body.appendChild(tr);
+  });
+}
+async function delUser(id){await fetch('/users/'+id,{method:'DELETE'});refreshUsers();}
+document.getElementById('createUserForm').onsubmit=async e=>{
+  e.preventDefault();const id=newId.value.trim(),pwd=newPwd.value.trim(),grade=newGrade.value;
+  const res=await fetch('/users',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({id,password:pwd,grade})});if(res.ok){alert('Créé');refreshUsers();e.target.reset();}
+  else alert('Erreur création');
+};
+document.getElementById('sendMsg').onsubmit=async e=>{
+  e.preventDefault();
+  await fetch('/messages',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({from:'DustyShadowShow',to:dest.value.trim(),content:msg.value.trim(),date:new Date().toLocaleString()})});
+  msg.value='';alert('Envoyé');
+};
+async function refreshMsgs(){
+  const res=await fetch('/messages');const all=await res.json();
+  const list=document.getElementById('msgList');list.innerHTML='';
+  all.filter(m=>m.to==='DustyShadowShow').forEach(m=>{
+    const div=document.createElement('div');div.className='message-item';
+    div.textContent=`[${m.date}] ${m.from} : ${m.content}`;list.appendChild(div);
+  });
+}
+refreshUsers();refreshMsgs();setInterval(refreshMsgs,5000);
+</script>
+<!-- Début du code dashboard -->
+<style>
+  #dashboardTab {
+    cursor: pointer;
+    padding: 10px 20px;
+    background: #222;
+    color: white;
+    display: inline-block;
+    margin-right: 10px;
+    border-radius: 5px 5px 0 0;
+  }
+  #dashboardTab.active {
+    background: #f90;
+    font-weight: bold;
+  }
+  #dashboardSection {
+    display: none;
+    background: #333;
+    color: white;
+    padding: 15px;
+    border-radius: 0 5px 5px 5px;
+    margin-top: -5px;
+  }
+  #dashboardSection pre {
+    background: #222;
+    padding: 10px;
+    max-height: 300px;
+    overflow-y: auto;
+  }
+  #consoleInput {
+    width: 100%;
+    padding: 8px;
+    margin-top: 10px;
+    background: #222;
+    border: none;
+    color: white;
+    font-family: monospace;
+  }
+  #jsonFilesSelect {
+    margin-top: 10px;
+    background: #222;
+    color: white;
+    padding: 5px;
+    border: none;
+  }
+  #refreshJson {
+    margin-left: 10px;
+    padding: 5px 10px;
+    background: #f90;
+    border: none;
+    cursor: pointer;
+    color: black;
+  }
+</style>
+
+<div id="dashboardTab">Dashboard</div>
+<div id="dashboardSection">
+  <h3>Console (admin only)</h3>
+  <pre id="consoleOutput">Tape une commande puis Entrée...</pre>
+  <input id="consoleInput" placeholder="Commande..." autocomplete="off"/>
+  
+  <h3>Fichiers JSON</h3>
+  <select id="jsonFilesSelect">
+    <option value="users.json">users.json</option>
+    <option value="deleted_users.json">deleted_users.json</option>
+    <option value="messages.json">messages.json</option>
+  </select>
+  <button id="refreshJson">Rafraîchir</button>
+  <pre id="jsonOutput"></pre>
+</div>
+
+<script>
+  const dashboardTab = document.getElementById('dashboardTab');
+  const dashboardSection = document.getElementById('dashboardSection');
+  const consoleInput = document.getElementById('consoleInput');
+  const consoleOutput = document.getElementById('consoleOutput');
+  const jsonFilesSelect = document.getElementById('jsonFilesSelect');
+  const jsonOutput = document.getElementById('jsonOutput');
+  const refreshJson = document.getElementById('refreshJson');
+
+  dashboardTab.addEventListener('click', () => {
+    const shown = dashboardSection.style.display === 'block';
+    dashboardSection.style.display = shown ? 'none' : 'block';
+    dashboardTab.classList.toggle('active', !shown);
+  });
+
+  consoleInput.addEventListener('keypress', e => {
+    if(e.key === 'Enter') {
+      const cmd = consoleInput.value.trim();
+      if(!cmd) return;
+      fetch('/dashboard_command', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({command: cmd})
+      }).then(r => r.json()).then(data => {
+        consoleOutput.textContent += '\n> ' + cmd + '\n' + data.result + '\n';
+        consoleInput.value = '';
+        consoleOutput.scrollTop = consoleOutput.scrollHeight;
+      }).catch(() => {
+        consoleOutput.textContent += '\nErreur lors de la commande\n';
+      });
+    }
+  });
+
+  function loadJsonFile(filename) {
+    fetch('/dashboard_files?file=' + filename)
+      .then(r => r.json())
+      .then(data => {
+        jsonOutput.textContent = JSON.stringify(data, null, 2);
+      }).catch(() => {
+        jsonOutput.textContent = 'Erreur chargement fichier JSON';
+      });
+  }
+
+  refreshJson.addEventListener('click', () => {
+    loadJsonFile(jsonFilesSelect.value);
+  });
+
+  loadJsonFile(jsonFilesSelect.value);
+</script>
+<!-- Fin du code dashboard -->
+
+</body></html>
